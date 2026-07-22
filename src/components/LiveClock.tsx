@@ -5,20 +5,24 @@ export function LiveClock() {
 
   useEffect(() => {
     setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000);
+    const t = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(t);
   }, []);
 
   if (!now) {
     return (
       <div className="clock-shell">
-        <span className="clock-time">--:--:--</span>
+        <span className="clock-time">--:--</span>
         <span className="clock-date">—</span>
       </div>
     );
   }
 
-  const time = now.toLocaleTimeString("en-GB", { hour12: false });
+  const time = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
   const date = now.toLocaleDateString("en-GB", {
     weekday: "short",
     day: "2-digit",
