@@ -12,7 +12,15 @@ export function LiveClock() {
   if (!now) {
     return (
       <div className="clock-shell">
-        <span className="clock-time">--:--</span>
+        <span
+          className="clock-time"
+          style={{
+            fontFamily: '"Space Mono", monospace',
+            fontWeight: 700,
+          }}
+        >
+          --:--
+        </span>
         <span className="clock-date">—</span>
       </div>
     );
@@ -23,6 +31,7 @@ export function LiveClock() {
     minute: "2-digit",
     hour12: false,
   });
+
   const date = now.toLocaleDateString("en-GB", {
     weekday: "short",
     day: "2-digit",
@@ -32,7 +41,16 @@ export function LiveClock() {
 
   return (
     <div className="clock-shell">
-      <span className="clock-time">{time}</span>
+      <span
+        className="clock-time"
+        style={{
+          fontFamily: '"Space Mono", monospace',
+          fontWeight: 700,
+        }}
+      >
+        {time}
+      </span>
+
       <span className="clock-date">{date}</span>
     </div>
   );
