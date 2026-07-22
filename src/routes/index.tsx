@@ -39,7 +39,7 @@ function Index() {
 
       {/* Title bottom-left */}
       <div className="title-block">
-        <div className="title-eyebrow">SITUACIÓN</div>
+        <div className="title-eyebrow">{"\n"}</div>
         <div className="title-scale">
           <span>0</span>
           <span className="bar" />
@@ -47,7 +47,7 @@ function Index() {
         </div>
         <div className="title-place">
           <div>PLACES I LOVE</div>
-          <div className="title-city">BANGALORE</div>
+          <div className="title-city">IN BANGALORE</div>
         </div>
       </div>
 
