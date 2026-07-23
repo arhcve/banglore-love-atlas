@@ -169,6 +169,14 @@ export const PLACES: LovedPlace[] = [
   url: "https://maps.app.goo.gl/syn2iUmNqpdcJCGL7?g_st=ic",
   note: "Jayanagar",
   }, 
+  {
+  id: "kried-food-truck",
+  name: "Kried Food Truck",
+  lat: 12.9056697,
+  lng: 77.5872283,
+  url: "https://maps.app.goo.gl/3Dbkzbqxi1aseUyq7",
+  note: "Bengaluru",
+  },
 ];
 
 export const SPOTIFY_PLAYLIST_ID = "158fsKMPt5TzUoGvbQElpL";
