@@ -153,6 +153,22 @@ export const PLACES: LovedPlace[] = [
     url: "https://maps.app.goo.gl/94DHM2RY8ZoAiPnb7?g_st=ic",
     note: "Tavarekere",
   },
+  {
+   id: "the-juke-box",
+  name: "The Juke Box",
+  lat: 12.9363552,
+  lng: 77.6148704,
+  url: "https://maps.app.goo.gl/xVm2zugCCdU28NSk6?g_st=ic",
+  note: "Koramangala 7th Block",
+  },
+  {
+  id: "junys-bakehouse",
+  name: "Juny's Bakehouse",
+  lat: 12.9255561,
+  lng: 77.5952011,
+  url: "https://maps.app.goo.gl/syn2iUmNqpdcJCGL7?g_st=ic",
+  note: "Jayanagar",
+  }, 
 ];
 
 export const SPOTIFY_PLAYLIST_ID = "158fsKMPt5TzUoGvbQElpL";
