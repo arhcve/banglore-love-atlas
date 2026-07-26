@@ -259,13 +259,14 @@
   box-shadow: 0 6px 24px rgba(0,0,0,0.55);
 }
 .clock-time {
-  font-family: "Special Elite", "JetBrains Mono", monospace;
-  font-weight: 700;
+  font-family: "Inter", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 900;
   font-size: 28px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
   color: var(--ink);
   text-shadow: 0 0 12px rgba(245, 197, 66, 0.35);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 .clock-date {
   font-family: "JetBrains Mono", monospace;
