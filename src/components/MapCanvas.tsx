@@ -18,8 +18,8 @@ export default function MapCanvas() {
       center: [77.6115, 12.951],
       zoom: 13.6,
       minZoom: 1.2,
-      pitch: 50,
-      bearing: -18,
+      pitch: 34,
+      bearing: 0,
       attributionControl: { compact: true },
       antialias: true,
       maxPitch: 70,
@@ -100,7 +100,7 @@ export default function MapCanvas() {
       const updateView = () => {
         const zoom = map.getZoom();
         const size = Math.max(4, Math.min(7, 4 + (zoom - 8) * 0.4));
-        const pitch = zoom <= 5 ? 0 : zoom >= 10 ? 50 : ((zoom - 5) / 5) * 50;
+        const pitch = zoom <= 5 ? 0 : zoom >= 10 ? 34 : ((zoom - 5) / 5) * 34;
         if (Math.abs(map.getPitch() - pitch) > 0.5) map.setPitch(pitch);
 
         for (const marker of markerElements) {
