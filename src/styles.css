@@ -161,7 +161,7 @@
   outline: none;
 }
 .maplibregl-canvas {
-  filter: contrast(1.06) brightness(0.92) saturate(0.55);
+  filter: contrast(1.08) brightness(0.88) saturate(0.42);
   will-change: transform;
 }
 .maplibregl-map { background: radial-gradient(circle at 50% 45%, #0d1720 0%, #020308 68%); }
@@ -174,14 +174,14 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: #55adff;
-  box-shadow: 0 0 2px rgba(126, 200, 255, .9), 0 0 6px rgba(59, 157, 255, .48);
+  background: radial-gradient(circle at 45% 40%, #9bd5ff 0 18%, #55adff 42%, #338be0 100%);
+  box-shadow: 0 0 1px rgba(180, 224, 255, .95), 0 0 5px rgba(59, 157, 255, .52);
   filter: none;
   cursor: pointer;
   transition: background-color .15s ease, box-shadow .15s ease;
 }
 .loved-dot:hover {
-  background: #8acaff;
+  background: radial-gradient(circle at 45% 40%, #d3edff 0 18%, #7bc4ff 45%, #429be8 100%);
   box-shadow: 0 0 3px rgba(196, 231, 255, .95), 0 0 9px rgba(59, 157, 255, .7);
 }
 
@@ -334,7 +334,7 @@
   letter-spacing: 0.3em;
 }
 
-/* Spotify â€” forced playback bar */
+/* Spotify — forced playback bar */
 .player-bar {
   position: relative;
   display: grid;
