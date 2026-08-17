@@ -148,49 +148,63 @@
 /* --- Map project styling --- */
 
 :root {
-  --ink: #f5e9a8;
-  --ink-dim: #8a8266;
-  --accent: #f5c542;
-  --dot: #3b9dff;
-  --dot-glow: #7ec8ff;
+  --ink: #d8f9ff;
+  --ink-dim: #6ca7b1;
+  --accent: #00d8ff;
+  --dot: #00d8ff;
+  --dot-glow: #62eaff;
 }
 
-/* Leaflet dark polish */
+/* Monochrome aerial survey map */
 .leaflet-container {
-  background: #05070d !important;
+  background: #07090a !important;
   outline: none;
+  cursor: crosshair;
 }
-.leaflet-tile-pane {
-  filter: contrast(1.05) brightness(0.92) saturate(0.6);
+.aerial-map .leaflet-tile-pane {
+  filter: grayscale(1) contrast(1.34) brightness(0.42) saturate(0);
+}
+.aerial-map .leaflet-tile {
+  image-rendering: auto;
+}
+.aerial-map::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 350;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(0, 216, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 216, 255, 0.018) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mix-blend-mode: screen;
 }
 
-/* Blue loved-place dots with pulsing glow */
+/* Cyan architectural survey marks */
 .loved-dot {
-  filter: drop-shadow(0 0 6px var(--dot-glow)) drop-shadow(0 0 14px rgba(59, 157, 255, 0.6));
+  filter: drop-shadow(0 0 2px rgba(0, 216, 255, 0.95));
   cursor: pointer;
-  transition: filter 0.25s ease;
-  animation: dot-pulse 3.2s ease-in-out infinite;
+  transition: fill-opacity 0.15s ease, filter 0.15s ease;
 }
 .loved-dot:hover {
-  filter: drop-shadow(0 0 10px var(--dot-glow)) drop-shadow(0 0 22px rgba(126, 200, 255, 0.9));
+  fill-opacity: 1;
+  filter: drop-shadow(0 0 6px rgba(0, 216, 255, 0.9));
 }
-@keyframes dot-pulse {
-  0%, 100% { opacity: 0.85; }
-  50% { opacity: 1; }
-}
+.survey-line { stroke-linecap: square; }
+.survey-boundary { stroke-linejoin: miter; }
 
 /* Tooltip */
 .leaflet-tooltip {
-  background: rgba(10, 14, 22, 0.92) !important;
-  border: 1px solid rgba(245, 197, 66, 0.35) !important;
+  background: rgba(4, 9, 10, 0.94) !important;
+  border: 1px solid rgba(0, 216, 255, 0.75) !important;
   color: var(--ink) !important;
   font-family: "JetBrains Mono", monospace !important;
   font-size: 11px !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase;
   padding: 6px 10px !important;
-  border-radius: 2px !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 rgba(0, 216, 255, 0.13) !important;
 }
 .leaflet-tooltip::before { display: none !important; }
 .dot-tip span {
@@ -286,10 +300,10 @@
   z-index: 1000;
   color: var(--ink);
   font-family: "JetBrains Mono", monospace;
-  padding: 14px 18px;
-  background: rgba(10, 14, 22, 0.55);
-  backdrop-filter: blur(4px);
-  border-left: 2px solid var(--accent);
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+  border-left: 0;
   max-width: 260px;
 }
 .title-eyebrow {
@@ -311,8 +325,8 @@
   height: 4px;
   background: repeating-linear-gradient(
     to right,
-    var(--accent) 0 12px,
-    transparent 12px 24px
+    var(--accent) 0 2px,
+    transparent 2px 7px
   );
 }
 .title-place {
@@ -320,6 +334,8 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.24em;
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(0, 216, 255, 0.3);
 }
 .title-city {
   color: var(--accent);
@@ -458,4 +474,3 @@
   .player-now { padding-inline: 8px; border-right: 0; text-align: left; }
   .player-timeline { grid-template-columns: auto minmax(70px, 1fr) auto; }
 }
-
