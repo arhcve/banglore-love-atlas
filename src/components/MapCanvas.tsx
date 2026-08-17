@@ -6,52 +6,48 @@ import { PLACES } from "@/data/places";
 const MAP_STYLE = {
   version: 8,
   sources: {
-    openmaptiles: {
-      type: "vector",
-      url: "https://tiles.openfreemap.org/planet",
+    satellite: {
+      type: "raster",
+      tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+      tileSize: 256,
+      maxzoom: 20,
+      attribution: "Esri, Maxar, Earthstar Geographics, and the GIS User Community",
     },
+    openmaptiles: { type: "vector", url: "https://tiles.openfreemap.org/planet" },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#05070d" } },
+    { id: "background", type: "background", paint: { "background-color": "#02050a" } },
     {
-      id: "landcover",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "landcover",
-      paint: { "fill-color": "#0a0d11", "fill-opacity": 0.72 },
-    },
-    {
-      id: "water",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "water",
-      paint: { "fill-color": "#020407", "fill-opacity": 0.95 },
-    },
-    {
-      id: "roads-shadow",
-      type: "line",
-      source: "openmaptiles",
-      "source-layer": "transportation",
+      id: "satellite-ground",
+      type: "raster",
+      source: "satellite",
       paint: {
-        "line-color": "#000000",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.4, 16, 4],
+        "raster-opacity": 0.97,
+        "raster-saturation": -0.16,
+        "raster-contrast": 0.18,
+        "raster-brightness-min": 0.04,
+        "raster-brightness-max": 0.82,
+        "raster-fade-duration": 0,
       },
+    },
+    {
+      id: "parks",
+      type: "fill",
+      source: "openmaptiles",
+      "source-layer": "landuse",
+      filter: ["match", ["get", "class"], ["park", "grass", "cemetery"], true, false],
+      paint: { "fill-color": "#29442d", "fill-opacity": 0.1 },
     },
     {
       id: "roads",
       type: "line",
       source: "openmaptiles",
       "source-layer": "transportation",
+      minzoom: 8,
       paint: {
-        "line-color": [
-          "match",
-          ["get", "class"],
-          ["primary", "trunk", "motorway"],
-          "#6d6030",
-          "#25282a",
-        ],
-        "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.25, 16, 2.2],
-        "line-opacity": 0.82,
+        "line-color": ["match", ["get", "class"], ["primary", "trunk", "motorway"], "#8a7635", "#313638"],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 9, 0.15, 16, 2.1],
+        "line-opacity": 0.58,
       },
     },
     {
@@ -59,24 +55,12 @@ const MAP_STYLE = {
       type: "fill-extrusion",
       source: "openmaptiles",
       "source-layer": "building",
-      minzoom: 13.5,
+      minzoom: 13.2,
       paint: {
-        "fill-extrusion-color": [
-          "interpolate",
-          ["linear"],
-          ["coalesce", ["get", "render_height"], ["get", "height"], 8],
-          0,
-          "#17191a",
-          18,
-          "#292b2b",
-          55,
-          "#4d4b43",
-          140,
-          "#77715d",
-        ],
+        "fill-extrusion-color": ["interpolate", ["linear"], ["coalesce", ["get", "render_height"], ["get", "height"], 8], 0, "#181b1d", 18, "#303335", 55, "#555248", 140, "#837a61"],
         "fill-extrusion-height": ["coalesce", ["get", "render_height"], ["get", "height"], 8],
         "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], ["get", "min_height"], 0],
-        "fill-extrusion-opacity": 0.94,
+        "fill-extrusion-opacity": 0.9,
         "fill-extrusion-vertical-gradient": true,
       },
     },
@@ -89,15 +73,15 @@ export default function MapCanvas() {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: MAP_STYLE,
-      center: [77.6115, 12.9345],
-      zoom: 14,
-      pitch: 58,
+      center: [77.6115, 12.951],
+      zoom: 13.6,
+      minZoom: 1.2,
+      pitch: 52,
       bearing: -18,
-      attributionControl: false,
+      attributionControl: { compact: true },
       antialias: true,
       maxPitch: 75,
       pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
@@ -109,45 +93,47 @@ export default function MapCanvas() {
     });
     mapRef.current = map;
 
-    map.on("error", (event) => {
-      containerRef.current?.setAttribute("data-map-error", event.error.message);
-    });
-
     map.on("load", () => {
-      containerRef.current?.setAttribute("data-map-ready", "true");
+      map.setProjection({ type: "globe" });
+      map.setSky({
+        "sky-color": "#01030a",
+        "horizon-color": "#1c3342",
+        "fog-color": "#080d13",
+        "fog-ground-blend": 0.65,
+        "horizon-fog-blend": 0.28,
+        "sky-horizon-blend": 0.68,
+        "atmosphere-blend": 0.72,
+      });
+
+      const markerElements: HTMLButtonElement[] = [];
       for (const place of PLACES) {
         const markerElement = document.createElement("button");
         markerElement.type = "button";
         markerElement.className = "loved-dot loved-dot-3d";
         markerElement.setAttribute("aria-label", `Open ${place.name} in Google Maps`);
-
-        const popup = new maplibregl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-          offset: 16,
-          className: "place-popup",
-        }).setHTML(`<div class="dot-tip">${place.name}<span>${place.note ?? ""}</span></div>`);
-
-        new maplibregl.Marker({ element: markerElement })
-          .setLngLat([place.lng, place.lat])
-          .addTo(map);
-
-        markerElement.addEventListener("mouseenter", () =>
-          popup.setLngLat([place.lng, place.lat]).addTo(map),
-        );
+        markerElements.push(markerElement);
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 })
+          .setHTML(`<div class="dot-tip">${place.name}<span>${place.note ?? ""}</span></div>`);
+        new maplibregl.Marker({ element: markerElement }).setLngLat([place.lng, place.lat]).addTo(map);
+        markerElement.addEventListener("mouseenter", () => popup.setLngLat([place.lng, place.lat]).addTo(map));
         markerElement.addEventListener("mouseleave", () => popup.remove());
-        markerElement.addEventListener("click", () => {
-          window.open(place.url, "_blank", "noopener,noreferrer");
-        });
+        markerElement.addEventListener("click", () => window.open(place.url, "_blank", "noopener,noreferrer"));
       }
 
-      map.jumpTo({
-        center: [77.6115, 12.9345],
-        zoom: 15.25,
-        pitch: 58,
-        bearing: -18,
-      });
-      containerRef.current?.setAttribute("data-map-zoom", map.getZoom().toFixed(2));
+      const updateScale = () => {
+        const zoom = map.getZoom();
+        const size = Math.max(3.5, Math.min(8, 3.5 + (zoom - 7) * 0.55));
+        const pitch = zoom <= 5 ? 0 : zoom >= 10 ? 52 : ((zoom - 5) / 5) * 52;
+        if (Math.abs(map.getPitch() - pitch) > 0.5) map.setPitch(pitch);
+        for (const marker of markerElements) {
+          marker.style.width = `${size}px`;
+          marker.style.height = `${size}px`;
+          marker.style.visibility = zoom < 6.5 ? "hidden" : "visible";
+          marker.style.pointerEvents = zoom < 7 ? "none" : "auto";
+        }
+      };
+      updateScale();
+      map.on("zoom", updateScale);
     });
 
     return () => {
