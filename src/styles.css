@@ -161,32 +161,28 @@
   outline: none;
 }
 .maplibregl-canvas {
-  filter: contrast(1.08) brightness(0.84) saturate(0.48);
+  filter: contrast(1.06) brightness(0.92) saturate(0.55);
   will-change: transform;
 }
 .maplibregl-map { background: radial-gradient(circle at 50% 45%, #0d1720 0%, #020308 68%); }
 .maplibregl-ctrl-attrib { color: rgba(245,233,168,.6)!important; background: rgba(5,7,13,.72)!important; font-size: 8px!important; }
 
-/* Blue loved-place dots with pulsing glow */
+/* Flat Citi Bike-style place dots with restrained blue glow */
 .loved-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 34%, #d7f1ff 0 10%, #79c7ff 18%, #3f99f2 44%, #236bc2 72%, #16467f 100%);
-  box-shadow: 0 0 1px rgba(215,241,255,.95), 0 0 4px rgba(63,153,242,.78), 0 0 8px rgba(35,107,194,.34);
+  background: #55adff;
+  box-shadow: 0 0 2px rgba(126, 200, 255, .9), 0 0 6px rgba(59, 157, 255, .48);
   filter: none;
   cursor: pointer;
-  transition: filter 0.25s ease;
-  animation: dot-pulse 3.2s ease-in-out infinite;
+  transition: background-color .15s ease, box-shadow .15s ease;
 }
 .loved-dot:hover {
-  filter: brightness(1.2);
-}
-@keyframes dot-pulse {
-  0%, 100% { filter: brightness(.9); }
-  50% { filter: brightness(1.12); }
+  background: #8acaff;
+  box-shadow: 0 0 3px rgba(196, 231, 255, .95), 0 0 9px rgba(59, 157, 255, .7);
 }
 
 /* Tooltip */
