@@ -5,7 +5,7 @@ type EmbedController = {
   togglePlay: () => void;
   play: () => void;
   pause: () => void;
-  seek: (seconds: number) => void;
+  seek: (milliseconds: number) => void;
   loadUri: (uri: string) => void;
   addListener: (
     event: string,
@@ -28,25 +28,22 @@ declare global {
 export function SpotifyPlayer() {
   const hostRef = useRef<HTMLDivElement>(null);
   const ctrlRef = useRef<EmbedController | null>(null);
-  const startedRef = useRef(false);
-  const indexRef = useRef(0);
 
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [index, setIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   const track = PLAYLIST_TRACKS[index];
 
   const goTo = useCallback((next: number) => {
-    const total = PLAYLIST_TRACKS.length;
-    const i = ((next % total) + total) % total;
-    indexRef.current = i;
+    const i = Math.max(0, Math.min(next, PLAYLIST_TRACKS.length - 1));
     setIndex(i);
-    setProgress(0);
+    setPosition(0);
+    setDuration(0);
     const c = ctrlRef.current;
     if (!c) return;
-    startedRef.current = true;
     c.loadUri(PLAYLIST_TRACKS[i].uri);
     c.play();
   }, []);
@@ -65,16 +62,8 @@ export function SpotifyPlayer() {
           controller.addListener("playback_update", (e) => {
             const { isPaused, position, duration } = e.data;
             setPlaying(!isPaused);
-            setProgress(duration ? Math.min(1, position / duration) : 0);
-            // Auto-advance in a loop when a track finishes.
-            if (
-              startedRef.current &&
-              duration > 0 &&
-              isPaused &&
-              position >= duration - 1200
-            ) {
-              goTo(indexRef.current + 1);
-            }
+            setPosition(position);
+            setDuration(duration);
           });
         },
       );
@@ -94,8 +83,20 @@ export function SpotifyPlayer() {
   }, [goTo]);
 
   const toggle = () => {
-    startedRef.current = true;
     ctrlRef.current?.togglePlay();
+  };
+
+  const seek = (milliseconds: number) => {
+    setPosition(milliseconds);
+    ctrlRef.current?.seek(milliseconds);
+  };
+
+  const formatTime = (milliseconds: number) => {
+    if (!Number.isFinite(milliseconds) || milliseconds <= 0) return "0:00";
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = String(totalSeconds % 60).padStart(2, "0");
+    return `${minutes}:${seconds}`;
   };
 
   return (
@@ -110,7 +111,7 @@ export function SpotifyPlayer() {
           type="button"
           className="player-btn"
           onClick={() => goTo(index - 1)}
-          disabled={!ready}
+          disabled={!ready || index === 0}
           aria-label="Previous track"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -142,7 +143,7 @@ export function SpotifyPlayer() {
           type="button"
           className="player-btn"
           onClick={() => goTo(index + 1)}
-          disabled={!ready}
+          disabled={!ready || index === PLAYLIST_TRACKS.length - 1}
           aria-label="Next track"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -157,21 +158,25 @@ export function SpotifyPlayer() {
           {track.title}
         </div>
         <div className="player-artist">{track.artist}</div>
-        <div className="player-progress">
-          <span style={{ width: `${Math.round(progress * 100)}%` }} />
+        <div className="player-timeline">
+          <span>{formatTime(position)}</span>
+          <input
+            type="range"
+            min={0}
+            max={Math.max(duration, 1)}
+            step={1000}
+            value={Math.min(position, Math.max(duration, 1))}
+            onChange={(event) => seek(Number(event.currentTarget.value))}
+            disabled={!ready || duration <= 0}
+            aria-label="Seek through current track"
+            style={
+              {
+                "--player-progress": `${duration ? (position / duration) * 100 : 0}%`,
+              } as React.CSSProperties
+            }
+          />
+          <span>{formatTime(duration)}</span>
         </div>
-      </div>
-
-      <div className="player-label">
-        <span className="player-loop">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M17 2l4 4-4 4" />
-            <path d="M3 12V10a4 4 0 014-4h14" />
-            <path d="M7 22l-4-4 4-4" />
-            <path d="M21 12v2a4 4 0 01-4 4H3" />
-          </svg>
-        </span>
-        ON LOOP
       </div>
     </div>
   );
