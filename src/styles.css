@@ -155,38 +155,32 @@
   --dot-glow: #7ec8ff;
 }
 
-/* Dark 3D map polish */
-.maplibre-map {
+/* Leaflet dark polish */
+.leaflet-container {
   background: #05070d !important;
   outline: none;
 }
-.maplibregl-canvas {
-  filter: contrast(1.08) brightness(0.88) saturate(0.42);
-  will-change: transform;
+.leaflet-tile-pane {
+  filter: contrast(1.05) brightness(0.92) saturate(0.6);
 }
-.maplibregl-map { background: radial-gradient(circle at 50% 45%, #0d1720 0%, #020308 68%); }
-.maplibregl-ctrl-attrib { color: rgba(245,233,168,.6)!important; background: rgba(5,7,13,.72)!important; font-size: 8px!important; }
 
-/* Flat Citi Bike-style place dots with restrained blue glow */
+/* Blue loved-place dots with pulsing glow */
 .loved-dot {
-  width: 6px;
-  height: 6px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 45% 40%, #9bd5ff 0 18%, #55adff 42%, #338be0 100%);
-  box-shadow: 0 0 1px rgba(180, 224, 255, .95), 0 0 5px rgba(59, 157, 255, .52);
-  filter: none;
+  filter: drop-shadow(0 0 6px var(--dot-glow)) drop-shadow(0 0 14px rgba(59, 157, 255, 0.6));
   cursor: pointer;
-  transition: background-color .15s ease, box-shadow .15s ease;
+  transition: filter 0.25s ease;
+  animation: dot-pulse 3.2s ease-in-out infinite;
 }
 .loved-dot:hover {
-  background: radial-gradient(circle at 45% 40%, #d3edff 0 18%, #7bc4ff 45%, #429be8 100%);
-  box-shadow: 0 0 3px rgba(196, 231, 255, .95), 0 0 9px rgba(59, 157, 255, .7);
+  filter: drop-shadow(0 0 10px var(--dot-glow)) drop-shadow(0 0 22px rgba(126, 200, 255, 0.9));
+}
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
 }
 
 /* Tooltip */
-.maplibregl-popup-content {
+.leaflet-tooltip {
   background: rgba(10, 14, 22, 0.92) !important;
   border: 1px solid rgba(245, 197, 66, 0.35) !important;
   color: var(--ink) !important;
@@ -198,7 +192,7 @@
   border-radius: 2px !important;
   box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
 }
-.maplibregl-popup-tip { display: none !important; }
+.leaflet-tooltip::before { display: none !important; }
 .dot-tip span {
   display: block;
   font-size: 9px;
@@ -334,133 +328,16 @@
   letter-spacing: 0.3em;
 }
 
-/* Spotify — forced playback bar */
-.player-bar {
-  position: relative;
-  display: grid;
-  grid-template-columns: 112px minmax(0, 1fr) 112px;
-  align-items: center;
-  gap: 14px;
-  width: min(620px, calc(100vw - 2rem));
-  padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(245, 197, 66, 0.22);
-  background: rgba(14, 16, 18, 0.86);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
-}
-.player-embed {
-  position: absolute;
-  width: 1px;
-  height: 1px;
+/* Spotify player */
+.spotify-shell {
+  border-radius: 12px;
   overflow: hidden;
-  opacity: 0.001;
-  pointer-events: none;
-  left: 0;
-  bottom: 0;
+  border: 1px solid rgba(245, 197, 66, 0.2);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  background: rgba(10, 14, 22, 0.8);
+  backdrop-filter: blur(6px);
 }
-.player-btn {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  color: var(--ink-dim);
-  background: transparent;
-  transition: color 0.2s ease, background 0.2s ease, transform 0.15s ease;
-}
-.player-btn:hover:not(:disabled) {
-  color: var(--ink);
-  background: rgba(245, 197, 66, 0.1);
-}
-.player-btn:active:not(:disabled) { transform: scale(0.92); }
-.player-btn:disabled { opacity: 0.35; cursor: default; }
-.player-btn-main { color: var(--ink); }
-.player-controls { display: flex; align-items: center; justify-content: center; gap: 4px; }
-.player-balance { width: 112px; }
-.player-now {
-  min-width: 0;
-  padding-inline: 16px;
-  border-inline: 1px solid rgba(245, 197, 66, 0.18);
-  text-align: center;
-}
-.player-title {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--ink);
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.player-artist {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
-  letter-spacing: 0.22em;
-  color: var(--ink-dim);
-  text-transform: uppercase;
-  margin-top: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.player-timeline {
-  display: grid;
-  grid-template-columns: auto minmax(180px, 1fr) auto;
-  align-items: center;
-  gap: 7px;
-  margin-top: 7px;
-  color: var(--ink-dim);
-  font-family: "JetBrains Mono", monospace;
-  font-size: 8px;
-  font-variant-numeric: tabular-nums;
-}
-.player-timeline input {
-  width: 100%;
-  height: 14px;
-  margin: 0;
-  cursor: pointer;
-  appearance: none;
-  background: transparent;
-}
-.player-timeline input:disabled { cursor: default; opacity: 0.45; }
-.player-timeline input::-webkit-slider-runnable-track {
-  height: 2px;
-  background: linear-gradient(to right, var(--accent) var(--player-progress), rgba(245, 233, 168, 0.14) var(--player-progress));
-}
-.player-timeline input::-webkit-slider-thumb {
-  width: 9px;
-  height: 9px;
-  margin-top: -3.5px;
-  border: 0;
-  border-radius: 50%;
-  appearance: none;
-  background: var(--ink);
-  box-shadow: 0 0 8px rgba(245, 197, 66, 0.75);
-}
-.player-timeline input::-moz-range-track {
-  height: 2px;
-  background: rgba(245, 233, 168, 0.14);
-}
-.player-timeline input::-moz-range-progress { height: 2px; background: var(--accent); }
-.player-timeline input::-moz-range-thumb {
-  width: 9px;
-  height: 9px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--ink);
-  box-shadow: 0 0 8px rgba(245, 197, 66, 0.75);
-}
-
-@media (max-width: 520px) {
-  .player-bar {
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 8px;
-    padding-inline: 12px;
-  }
-  .player-balance { display: none; }
-  .player-now { padding-inline: 8px; border-right: 0; text-align: left; }
-  .player-timeline { grid-template-columns: auto minmax(70px, 1fr) auto; }
+.spotify-shell iframe {
+  display: block;
+  border-radius: 12px;
 }
