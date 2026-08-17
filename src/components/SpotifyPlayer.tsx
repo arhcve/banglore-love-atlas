@@ -42,6 +42,7 @@ export function SpotifyPlayer() {
             ctrlRef.current = controller;
             setReady(true);
             controller.addListener("playback_update", (e) => {
+              (window as any).__spEvt = e.data;
               stateRef.current = { position: e.data.position, duration: e.data.duration };
               setPlaying(!e.data.isPaused);
             });
