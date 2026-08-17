@@ -328,7 +328,7 @@
   letter-spacing: 0.3em;
 }
 
-/* Spotify — forced playback bar */
+/* Spotify â€” forced playback bar */
 .player-bar {
   position: relative;
   display: flex;
@@ -368,19 +368,6 @@
 .player-btn:active:not(:disabled) { transform: scale(0.92); }
 .player-btn:disabled { opacity: 0.35; cursor: default; }
 .player-btn-main { color: var(--ink); }
-.player-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 2px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
-  letter-spacing: 0.28em;
-  color: var(--ink-dim);
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.player-loop { display: inline-flex; color: var(--accent); }
 .player-controls { display: flex; align-items: center; gap: 4px; }
 .player-now {
   min-width: 190px;
@@ -410,17 +397,50 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.player-progress {
+.player-timeline {
+  display: grid;
+  grid-template-columns: auto minmax(110px, 1fr) auto;
+  align-items: center;
+  gap: 7px;
   margin-top: 7px;
+  color: var(--ink-dim);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.player-timeline input {
+  width: 100%;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+  appearance: none;
+  background: transparent;
+}
+.player-timeline input:disabled { cursor: default; opacity: 0.45; }
+.player-timeline input::-webkit-slider-runnable-track {
+  height: 2px;
+  background: linear-gradient(to right, var(--accent) var(--player-progress), rgba(245, 233, 168, 0.14) var(--player-progress));
+}
+.player-timeline input::-webkit-slider-thumb {
+  width: 9px;
+  height: 9px;
+  margin-top: -3.5px;
+  border: 0;
+  border-radius: 50%;
+  appearance: none;
+  background: var(--ink);
+  box-shadow: 0 0 8px rgba(245, 197, 66, 0.75);
+}
+.player-timeline input::-moz-range-track {
   height: 2px;
   background: rgba(245, 233, 168, 0.14);
-  overflow: hidden;
 }
-.player-progress span {
-  display: block;
-  height: 100%;
-  background: var(--accent);
-  box-shadow: 0 0 8px rgba(245, 197, 66, 0.6);
-  transition: width 0.4s linear;
+.player-timeline input::-moz-range-progress { height: 2px; background: var(--accent); }
+.player-timeline input::-moz-range-thumb {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 8px rgba(245, 197, 66, 0.75);
 }
-
