@@ -381,4 +381,46 @@
   white-space: nowrap;
 }
 .player-loop { display: inline-flex; color: var(--accent); }
+.player-controls { display: flex; align-items: center; gap: 4px; }
+.player-now {
+  min-width: 190px;
+  max-width: 260px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(245, 197, 66, 0.18);
+}
+.player-title {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-artist {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-progress {
+  margin-top: 7px;
+  height: 2px;
+  background: rgba(245, 233, 168, 0.14);
+  overflow: hidden;
+}
+.player-progress span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(245, 197, 66, 0.6);
+  transition: width 0.4s linear;
+}
 
