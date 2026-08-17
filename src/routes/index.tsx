@@ -56,8 +56,8 @@ function Index() {
         <LiveClock />
       </div>
 
-      {/* Spotify bottom-right */}
-      <div className="fixed bottom-6 right-6 z-[1000] w-[min(360px,calc(100vw-3rem))]">
+      {/* Player bar centered at the bottom */}
+      <div className="fixed bottom-6 left-1/2 z-[1000] -translate-x-1/2">
         <SpotifyPlayer />
       </div>
     </div>
