@@ -178,6 +178,7 @@ export function SpotifyPlayer() {
           <span>{formatTime(duration)}</span>
         </div>
       </div>
+      <div className="player-balance" aria-hidden="true" />
     </div>
   );
 }
