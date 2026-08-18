@@ -29,6 +29,7 @@ export function SpotifyPlayer() {
   const hostRef = useRef<HTMLDivElement>(null);
   const ctrlRef = useRef<EmbedController | null>(null);
   const playTimerRef = useRef<number | null>(null);
+  const indexRef = useRef(0);
 
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -38,8 +39,9 @@ export function SpotifyPlayer() {
 
   const track = PLAYLIST_TRACKS[index];
 
-  const goTo = useCallback((next: number) => {
-    const i = (next + PLAYLIST_TRACKS.length) % PLAYLIST_TRACKS.length;
+  const goTo = useCallback((direction: -1 | 1) => {
+    const i = (indexRef.current + direction + PLAYLIST_TRACKS.length) % PLAYLIST_TRACKS.length;
+    indexRef.current = i;
     setIndex(i);
     setPosition(0);
     setDuration(0);
@@ -126,7 +128,7 @@ export function SpotifyPlayer() {
         <button
           type="button"
           className="player-btn"
-          onClick={() => goTo(index - 1)}
+          onClick={() => goTo(-1)}
           disabled={!ready}
           aria-label="Previous track"
         >
@@ -158,7 +160,7 @@ export function SpotifyPlayer() {
         <button
           type="button"
           className="player-btn"
-          onClick={() => goTo(index + 1)}
+          onClick={() => goTo(1)}
           disabled={!ready}
           aria-label="Next track"
         >
