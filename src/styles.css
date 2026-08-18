@@ -162,7 +162,7 @@
   cursor: crosshair;
 }
 .aerial-map .leaflet-tile-pane {
-  filter: grayscale(1) contrast(1.34) brightness(0.42) saturate(0);
+  filter: grayscale(1) contrast(1.42) brightness(0.46) saturate(0);
 }
 .aerial-map .leaflet-tile {
   image-rendering: auto;
@@ -180,6 +180,35 @@
   mix-blend-mode: screen;
 }
 
+
+/* Architectural drawing layer: fixed vectors keep map panning and zooming fast. */
+.topographic-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 520;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.contour-lines path {
+  fill: none;
+  stroke: rgba(0, 216, 255, 0.16);
+  stroke-width: 0.85;
+  vector-effect: non-scaling-stroke;
+}
+.contour-lines path:nth-child(even) {
+  stroke: rgba(216, 249, 255, 0.11);
+  stroke-dasharray: 2 3;
+}
+.survey-ticks path {
+  fill: none;
+  stroke: rgba(0, 216, 255, 0.5);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
 /* Cyan architectural survey marks */
 .loved-dot {
   filter: drop-shadow(0 0 2px rgba(0, 216, 255, 0.95));
@@ -192,6 +221,10 @@
 }
 .survey-line { stroke-linecap: square; }
 .survey-boundary { stroke-linejoin: miter; }
+.site-frame {
+  stroke-linejoin: miter;
+  filter: drop-shadow(2px 2px 0 rgba(0, 216, 255, 0.12));
+}
 
 /* Tooltip */
 .leaflet-tooltip {
