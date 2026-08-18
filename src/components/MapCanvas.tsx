@@ -43,6 +43,40 @@ export default function MapCanvas() {
     let lastRouteOrigin: L.LatLng | null = null;
     let routeRequest = 0;
 
+    const locationControl = L.control({ position: "topright" });
+    locationControl.onAdd = () => {
+      const button = L.DomUtil.create("button", "live-location-control") as HTMLButtonElement;
+      button.type = "button";
+      button.title = "Go to my location";
+      button.setAttribute("aria-label", "Go to my live location");
+      button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l3.05 6.45L21.5 12l-6.45 3.05L12 21.5l-3.05-6.45L2.5 12l6.45-3.05L12 2.5zm0 6.25A3.25 3.25 0 1 0 12 15.25 3.25 3.25 0 0 0 12 8.75z"/></svg>';
+      button.style.cssText = "width:44px;height:44px;margin:calc(50vh - 22px) 14px 0 0;border:1px solid rgba(0,216,255,.55);border-radius:50%;background:rgba(12,14,16,.88);color:#00d8ff;display:grid;place-items:center;cursor:pointer;box-shadow:0 0 22px rgba(0,216,255,.22);backdrop-filter:blur(10px);";
+      const icon = button.querySelector("svg");
+      if (icon instanceof SVGElement) {
+        icon.style.width = "22px";
+        icon.style.height = "22px";
+        icon.style.fill = "currentColor";
+      }
+      L.DomEvent.disableClickPropagation(button);
+      L.DomEvent.on(button, "click", (event) => {
+        L.DomEvent.stop(event);
+        if (currentOrigin) {
+          map.flyTo(currentOrigin, Math.max(map.getZoom(), 16.5), { duration: 0.65 });
+          return;
+        }
+        navigator.geolocation?.getCurrentPosition(
+          ({ coords }) => {
+            currentOrigin = L.latLng(coords.latitude, coords.longitude);
+            map.flyTo(currentOrigin, 16.5, { duration: 0.65 });
+          },
+          () => undefined,
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 },
+        );
+      });
+      return button;
+    };
+    locationControl.addTo(map);
+
     for (const place of PLACES) {
       const marker = L.circleMarker([place.lat, place.lng], {
         radius: 7,
