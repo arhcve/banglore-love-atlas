@@ -250,6 +250,41 @@
 .drive-badge svg { width: 13px; height: 13px; fill: currentColor; }
 .dot-tip .dot-coordinates { display: block; margin-top: 4px; overflow: hidden; color: var(--ink-dim); font-size: 8px; letter-spacing: 0.07em; text-overflow: ellipsis; white-space: nowrap; }
 
+
+/* Live location appears without changing the Koramangala camera. */
+.user-location-marker {
+  position: relative;
+  border: 0;
+  background: transparent;
+}
+.user-location-core {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #4285f4;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+}
+.user-location-pulse {
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  background: rgba(66, 133, 244, 0.22);
+  animation: location-pulse 2s ease-out infinite;
+}
+@keyframes location-pulse {
+  0% { transform: scale(0.55); opacity: 0.9; }
+  75%, 100% { transform: scale(1.25); opacity: 0; }
+}
+.leaflet-tooltip.user-location-tooltip {
+  width: auto;
+  min-width: max-content;
+  color: #fff !important;
+}
+
 /* Animated contour background under the map */
 .contour-bg {
   position: absolute;
