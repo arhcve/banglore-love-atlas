@@ -32,20 +32,7 @@ export default function MapCanvas() {
     const bounds = L.latLngBounds(PLACES.map((place) => [place.lat, place.lng]));
     const centre = bounds.getCenter();
 
-    // Fine cyan survey lines radiate from the collection's geographic centre.
     for (const place of PLACES) {
-      L.polyline(
-        [centre, [place.lat, place.lng]],
-        {
-          color: CYAN,
-          weight: 0.8,
-          opacity: 0.62,
-          dashArray: "2 4",
-          interactive: false,
-          className: "survey-line",
-        },
-      ).addTo(map);
-
       const marker = L.circleMarker([place.lat, place.lng], {
         radius: 7,
         color: CYAN,
