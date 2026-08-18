@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { PLACES } from "@/data/places";
 
 const CYAN = "#00d8ff";
+const FEATURED_PLACES = new Set(["christ-university", "bobs-bar", "milano-ice-cream-koramangala"]);
 
 export default function MapCanvas() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -13,8 +14,8 @@ export default function MapCanvas() {
     if (!containerRef.current || mapRef.current) return;
 
     const map = L.map(containerRef.current, {
-      center: [12.9352, 77.6245],
-      zoom: 15,
+      center: [12.9342, 77.6125],
+      zoom: 15.5,
       zoomSnap: 0.25,
       zoomControl: false,
       attributionControl: false,
@@ -31,7 +32,7 @@ export default function MapCanvas() {
     ).addTo(map);
 
     for (const place of PLACES) {
-      const frameOffset = 0.00016;
+      const frameOffset = 0.0002;
       L.rectangle(
         [
           [place.lat - frameOffset, place.lng - frameOffset],
@@ -39,10 +40,10 @@ export default function MapCanvas() {
         ],
         {
           color: CYAN,
-          weight: 0.75,
-          opacity: 0.5,
+          weight: 1.15,
+          opacity: 0.95,
           fillColor: CYAN,
-          fillOpacity: 0.035,
+          fillOpacity: 0.3,
           interactive: false,
           className: "site-frame",
         },
@@ -57,14 +58,21 @@ export default function MapCanvas() {
         className: "loved-dot",
       }).addTo(map);
 
+      const featured = FEATURED_PLACES.has(place.id);
       marker.bindTooltip(
-        `<div class="dot-tip">${place.name}<span>${place.note ?? ""}</span></div>`,
-        { direction: "top", offset: [0, -8], opacity: 1 },
+        `<div class="dot-tip"><strong>${place.name}</strong><span>${place.lat.toFixed(4)}°N / ${place.lng.toFixed(4)}°E</span></div>`,
+        {
+          direction: place.id === "bobs-bar" ? "left" : "top",
+          offset: place.id === "bobs-bar" ? [-14, 0] : [0, -14],
+          opacity: 1,
+          permanent: featured,
+          className: featured ? "site-callout" : "place-tooltip",
+        },
       );
       marker.on("click", () => window.open(place.url, "_blank", "noopener,noreferrer"));
     }
 
-    map.setView([12.9352, 77.6245], 15, { animate: false });
+    map.setView([12.9342, 77.6125], 15.5, { animate: false });
 
     return () => {
       map.remove();
