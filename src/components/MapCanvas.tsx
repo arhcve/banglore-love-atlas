@@ -72,7 +72,52 @@ export default function MapCanvas() {
 
     map.setView([12.9342, 77.6125], 15.5, { animate: false });
 
+
+    let userMarker: L.Marker | null = null;
+    let accuracyCircle: L.Circle | null = null;
+    const locationWatchId = navigator.geolocation
+      ? navigator.geolocation.watchPosition(
+          ({ coords }) => {
+            const position: L.LatLngExpression = [coords.latitude, coords.longitude];
+            if (!userMarker) {
+              userMarker = L.marker(position, {
+                interactive: true,
+                zIndexOffset: 1000,
+                icon: L.divIcon({
+                  className: "user-location-marker",
+                  html: '<span class="user-location-pulse"></span><span class="user-location-core"></span>',
+                  iconSize: [22, 22],
+                  iconAnchor: [11, 11],
+                }),
+              })
+                .addTo(map)
+                .bindTooltip("YOU ARE HERE", {
+                  direction: "top",
+                  offset: [0, -10],
+                  className: "place-tooltip user-location-tooltip",
+                });
+              accuracyCircle = L.circle(position, {
+                radius: Math.min(coords.accuracy, 250),
+                color: "#4285f4",
+                weight: 1,
+                opacity: 0.35,
+                fillColor: "#4285f4",
+                fillOpacity: 0.08,
+                interactive: false,
+              }).addTo(map);
+            } else {
+              userMarker.setLatLng(position);
+              accuracyCircle?.setLatLng(position).setRadius(Math.min(coords.accuracy, 250));
+            }
+          },
+          () => undefined,
+          { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 },
+        )
+      : null;
+
+
     return () => {
+      if (locationWatchId !== null) navigator.geolocation.clearWatch(locationWatchId);
       map.remove();
       mapRef.current = null;
     };
