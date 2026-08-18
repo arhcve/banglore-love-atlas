@@ -13,8 +13,9 @@ export default function MapCanvas() {
     if (!containerRef.current || mapRef.current) return;
 
     const map = L.map(containerRef.current, {
-      center: [12.944, 77.612],
-      zoom: 14,
+      center: [12.9352, 77.6245],
+      zoom: 15,
+      zoomSnap: 0.25,
       zoomControl: false,
       attributionControl: false,
       preferCanvas: true,
@@ -28,9 +29,6 @@ export default function MapCanvas() {
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       { maxZoom: 19, updateWhenZooming: false, keepBuffer: 3 },
     ).addTo(map);
-
-    const bounds = L.latLngBounds(PLACES.map((place) => [place.lat, place.lng]));
-    const centre = bounds.getCenter();
 
     for (const place of PLACES) {
       const frameOffset = 0.00016;
@@ -66,21 +64,7 @@ export default function MapCanvas() {
       marker.on("click", () => window.open(place.url, "_blank", "noopener,noreferrer"));
     }
 
-    // A crisp cyan perimeter makes the mapped collection read like a site plan.
-    const hull = PLACES
-      .map((place) => L.latLng(place.lat, place.lng))
-      .sort((a, b) => Math.atan2(a.lat - centre.lat, a.lng - centre.lng) - Math.atan2(b.lat - centre.lat, b.lng - centre.lng));
-    L.polygon(hull, {
-      color: CYAN,
-      weight: 1.35,
-      opacity: 0.9,
-      fillColor: CYAN,
-      fillOpacity: 0.035,
-      interactive: false,
-      className: "survey-boundary",
-    }).addTo(map);
-
-    map.fitBounds(bounds, { paddingTopLeft: [70, 70], paddingBottomRight: [90, 110] });
+    map.setView([12.9352, 77.6245], 15, { animate: false });
 
     return () => {
       map.remove();
