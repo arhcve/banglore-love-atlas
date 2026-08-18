@@ -223,7 +223,8 @@
 .survey-boundary { stroke-linejoin: miter; }
 .site-frame {
   stroke-linejoin: miter;
-  filter: drop-shadow(2px 2px 0 rgba(0, 216, 255, 0.12));
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 5px rgba(0, 216, 255, 0.55));
 }
 
 /* Tooltip */
@@ -246,6 +247,57 @@
   color: var(--ink-dim);
   margin-top: 2px;
   letter-spacing: 0.15em;
+}
+
+
+/* Bold aerial annotations inspired by architectural competition boards. */
+.leaflet-tooltip.site-callout {
+  min-width: 168px;
+  padding: 0 0 34px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+}
+.site-callout .dot-tip {
+  text-align: center;
+}
+.site-callout .dot-tip strong {
+  display: block;
+  color: var(--ink);
+  font-family: "Inter", "JetBrains Mono", sans-serif;
+  font-size: clamp(13px, 1.4vw, 20px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+.site-callout .dot-tip span {
+  margin-top: 6px;
+  color: var(--accent);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.leaflet-tooltip.site-callout::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 1px;
+  height: 28px;
+  background: var(--accent);
+  box-shadow: 0 0 7px rgba(0, 216, 255, 0.8);
+}
+.leaflet-tooltip-left.site-callout {
+  padding: 0 34px 0 0 !important;
+}
+.leaflet-tooltip-left.site-callout::after {
+  left: auto;
+  right: 0;
+  top: 50%;
+  bottom: auto;
+  width: 28px;
+  height: 1px;
 }
 
 /* Animated contour background under the map */
