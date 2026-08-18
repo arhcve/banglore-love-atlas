@@ -28,6 +28,7 @@ declare global {
 export function SpotifyPlayer() {
   const hostRef = useRef<HTMLDivElement>(null);
   const ctrlRef = useRef<EmbedController | null>(null);
+  const playTimerRef = useRef<number | null>(null);
 
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -38,14 +39,21 @@ export function SpotifyPlayer() {
   const track = PLAYLIST_TRACKS[index];
 
   const goTo = useCallback((next: number) => {
-    const i = Math.max(0, Math.min(next, PLAYLIST_TRACKS.length - 1));
+    const i = (next + PLAYLIST_TRACKS.length) % PLAYLIST_TRACKS.length;
     setIndex(i);
     setPosition(0);
     setDuration(0);
-    const c = ctrlRef.current;
-    if (!c) return;
-    c.loadUri(PLAYLIST_TRACKS[i].uri);
-    c.play();
+    setPlaying(true);
+
+    const controller = ctrlRef.current;
+    if (!controller) return;
+
+    if (playTimerRef.current !== null) window.clearTimeout(playTimerRef.current);
+    controller.loadUri(PLAYLIST_TRACKS[i].uri);
+    playTimerRef.current = window.setTimeout(() => {
+      controller.play();
+      playTimerRef.current = null;
+    }, 75);
   }, []);
 
   useEffect(() => {
@@ -79,11 +87,19 @@ export function SpotifyPlayer() {
 
     return () => {
       cancelled = true;
+      if (playTimerRef.current !== null) window.clearTimeout(playTimerRef.current);
     };
   }, [goTo]);
 
   const toggle = () => {
-    ctrlRef.current?.togglePlay();
+    const controller = ctrlRef.current;
+    if (!controller) return;
+
+    setPlaying((wasPlaying) => {
+      if (wasPlaying) controller.pause();
+      else controller.play();
+      return !wasPlaying;
+    });
   };
 
   const seek = (milliseconds: number) => {
@@ -111,7 +127,7 @@ export function SpotifyPlayer() {
           type="button"
           className="player-btn"
           onClick={() => goTo(index - 1)}
-          disabled={!ready || index === 0}
+          disabled={!ready}
           aria-label="Previous track"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -143,7 +159,7 @@ export function SpotifyPlayer() {
           type="button"
           className="player-btn"
           onClick={() => goTo(index + 1)}
-          disabled={!ready || index === PLAYLIST_TRACKS.length - 1}
+          disabled={!ready}
           aria-label="Next track"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
