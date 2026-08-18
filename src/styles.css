@@ -241,6 +241,15 @@
 }
 
 
+
+/* Compact navigation details stay within the existing hover card width. */
+.leaflet-tooltip.place-tooltip { width: 220px; max-width: 220px; }
+.dot-tip-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dot-tip-row strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dot-tip .drive-badge { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; margin: 0; color: var(--accent); font-size: 9px; letter-spacing: 0; white-space: nowrap; }
+.drive-badge svg { width: 13px; height: 13px; fill: currentColor; }
+.dot-tip .dot-coordinates { display: block; margin-top: 4px; overflow: hidden; color: var(--ink-dim); font-size: 8px; letter-spacing: 0.07em; text-overflow: ellipsis; white-space: nowrap; }
+
 /* Animated contour background under the map */
 .contour-bg {
   position: absolute;
