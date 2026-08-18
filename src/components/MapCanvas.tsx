@@ -5,19 +5,13 @@ import { PLACES } from "@/data/places";
 
 const CYAN = "#00d8ff";
 
-const MAP_ORIGIN = { lat: 12.9342, lng: 77.6125 };
+type DriveEstimate = { km: string; minutes: number } | null;
 
-function getDrivingEstimate(lat: number, lng: number) {
-  const toRadians = (value: number) => (value * Math.PI) / 180;
-  const dLat = toRadians(lat - MAP_ORIGIN.lat);
-  const dLng = toRadians(lng - MAP_ORIGIN.lng);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRadians(MAP_ORIGIN.lat)) * Math.cos(toRadians(lat)) * Math.sin(dLng / 2) ** 2;
-  const directKm = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const roadKm = Math.max(0.4, directKm * 1.28);
-  const minutes = Math.max(2, Math.round((roadKm / 24) * 60));
-  return { km: roadKm.toFixed(1), minutes };
+function getTooltipContent(place: (typeof PLACES)[number], drive: DriveEstimate) {
+  const driveLabel = drive ? `${drive.minutes} min` : "LOCATING…";
+  const distanceLabel = drive ? ` · ${drive.km} km` : "";
+  return `<div class="dot-tip"><div class="dot-tip-row"><strong>${place.name}</strong><span class="drive-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11l1.5-4h11l1.5 4 2 2v5h-2v-2H5v2H3v-5l2-2zm2.2-2L6.5 11h11L16.8 9H7.2zM7 14.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>${driveLabel}</span></div><span class="dot-coordinates">${place.lat.toFixed(4)}°N / ${place.lng.toFixed(4)}°E${distanceLabel}</span></div>`;
 }
-
 
 export default function MapCanvas() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -44,8 +38,12 @@ export default function MapCanvas() {
       { maxZoom: 19, updateWhenZooming: false, keepBuffer: 3 },
     ).addTo(map);
 
+    const placeMarkers = new Map<string, L.CircleMarker>();
+    let currentOrigin: L.LatLng | null = null;
+    let lastRouteOrigin: L.LatLng | null = null;
+    let routeRequest = 0;
+
     for (const place of PLACES) {
-      const drive = getDrivingEstimate(place.lat, place.lng);
       const marker = L.circleMarker([place.lat, place.lng], {
         radius: 7,
         color: CYAN,
@@ -56,7 +54,7 @@ export default function MapCanvas() {
       }).addTo(map);
 
       marker.bindTooltip(
-        `<div class="dot-tip"><div class="dot-tip-row"><strong>${place.name}</strong><span class="drive-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11l1.5-4h11l1.5 4 2 2v5h-2v-2H5v2H3v-5l2-2zm2.2-2L6.5 11h11L16.8 9H7.2zM7 14.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>${drive.minutes} min</span></div><span class="dot-coordinates">${place.lat.toFixed(4)}°N / ${place.lng.toFixed(4)}°E · ${drive.km} km</span></div>`,
+        getTooltipContent(place, null),
         {
           direction: "top",
           offset: [0, -8],
@@ -64,21 +62,65 @@ export default function MapCanvas() {
           className: "place-tooltip",
         },
       );
+      placeMarkers.set(place.id, marker);
       marker.on("click", () => {
-        const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}&travelmode=driving`;
+        const origin = currentOrigin ? `&origin=${currentOrigin.lat},${currentOrigin.lng}` : "";
+        const directionsUrl = `https://www.google.com/maps/dir/?api=1${origin}&destination=${place.lat},${place.lng}&travelmode=driving`;
         window.open(directionsUrl, "_blank", "noopener,noreferrer");
       });
     }
 
     map.setView([12.9342, 77.6125], 15.5, { animate: false });
 
+    const updateDrivingTimes = async (origin: L.LatLng) => {
+      const requestId = ++routeRequest;
+      const coordinates = [
+        [origin.lng, origin.lat],
+        ...PLACES.map((place) => [place.lng, place.lat]),
+      ]
+        .map(([lng, lat]) => `${lng},${lat}`)
+        .join(";");
+
+      try {
+        const response = await fetch(
+          `https://router.project-osrm.org/table/v1/driving/${coordinates}?sources=0&annotations=duration,distance`,
+        );
+        if (!response.ok) return;
+
+        const routes = (await response.json()) as {
+          durations?: (number | null)[][];
+          distances?: (number | null)[][];
+        };
+        if (requestId !== routeRequest) return;
+
+        PLACES.forEach((place, index) => {
+          const seconds = routes.durations?.[0]?.[index + 1];
+          const meters = routes.distances?.[0]?.[index + 1];
+          if (seconds == null || meters == null) return;
+
+          placeMarkers.get(place.id)?.setTooltipContent(
+            getTooltipContent(place, {
+              minutes: Math.max(1, Math.round(seconds / 60)),
+              km: (meters / 1000).toFixed(1),
+            }),
+          );
+        });
+      } catch {
+        // Keep the location prompt visible if routing is temporarily unavailable.
+      }
+    };
 
     let userMarker: L.Marker | null = null;
     let accuracyCircle: L.Circle | null = null;
     const locationWatchId = navigator.geolocation
       ? navigator.geolocation.watchPosition(
           ({ coords }) => {
-            const position: L.LatLngExpression = [coords.latitude, coords.longitude];
+            const position = L.latLng(coords.latitude, coords.longitude);
+            currentOrigin = position;
+            if (!lastRouteOrigin || lastRouteOrigin.distanceTo(position) >= 100) {
+              lastRouteOrigin = position;
+              void updateDrivingTimes(position);
+            }
             if (!userMarker) {
               userMarker = L.marker(position, {
                 interactive: true,
