@@ -57,7 +57,7 @@ function Index() {
       </div>
 
       {/* Player bar centered at the bottom */}
-      <div className="fixed bottom-6 left-1/2 z-[1000] -translate-x-1/2">
+      <div className="fixed bottom-6 left-0 right-0 z-[1000] flex justify-center px-6">
         <SpotifyPlayer />
       </div>
     </div>
