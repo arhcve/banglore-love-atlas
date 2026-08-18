@@ -13,6 +13,14 @@ function getTooltipContent(place: (typeof PLACES)[number], drive: DriveEstimate)
   return `<div class="dot-tip"><div class="dot-tip-row"><strong>${place.name}</strong><span class="drive-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11l1.5-4h11l1.5 4 2 2v5h-2v-2H5v2H3v-5l2-2zm2.2-2L6.5 11h11L16.8 9H7.2zM7 14.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>${driveLabel}</span></div><span class="dot-coordinates">${place.lat.toFixed(4)}°N / ${place.lng.toFixed(4)}°E${distanceLabel}</span></div>`;
 }
 
+function getSequenceLabel(index: number) {
+  let label = "";
+  for (let value = index + 1; value > 0; value = Math.floor((value - 1) / 26)) {
+    label = String.fromCharCode(65 + ((value - 1) % 26)) + label;
+  }
+  return label;
+}
+
 export default function MapCanvas() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -42,6 +50,64 @@ export default function MapCanvas() {
     let currentOrigin: L.LatLng | null = null;
     let lastRouteOrigin: L.LatLng | null = null;
     let routeRequest = 0;
+    let routeMode = false;
+    const selectedRoutePlaces: Array<(typeof PLACES)[number]> = [];
+    const routeLayers: L.Layer[] = [];
+
+    const clearRoute = () => {
+      routeLayers.splice(0).forEach((layer) => map.removeLayer(layer));
+      selectedRoutePlaces.splice(0);
+    };
+
+    const addRoutePoint = (place: (typeof PLACES)[number]) => {
+      if (selectedRoutePlaces.some((selected) => selected.id === place.id)) return;
+
+      const previous = selectedRoutePlaces[selectedRoutePlaces.length - 1];
+      const label = getSequenceLabel(selectedRoutePlaces.length);
+      selectedRoutePlaces.push(place);
+
+      const pointLabel = L.marker([place.lat, place.lng], {
+        interactive: false,
+        zIndexOffset: 800,
+        icon: L.divIcon({
+          className: "route-point-label",
+          html: `<span style="display:grid;place-items:center;width:24px;height:24px;border:1px solid #00d8ff;border-radius:50%;background:#090b0d;color:#00d8ff;font:700 12px/1 monospace;box-shadow:0 0 14px rgba(0,216,255,.55)">${label}</span>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 31],
+        }),
+      }).addTo(map);
+      routeLayers.push(pointLabel);
+
+      if (!previous) return;
+
+      const line = L.polyline(
+        [[previous.lat, previous.lng], [place.lat, place.lng]],
+        { color: CYAN, weight: 1.5, opacity: 0.72, dashArray: "5 7", interactive: false },
+      ).addTo(map);
+      const midpoint = L.latLng(
+        (previous.lat + place.lat) / 2,
+        (previous.lng + place.lng) / 2,
+      );
+      const averageLatitude = ((previous.lat + place.lat) / 2) * (Math.PI / 180);
+      const bearing =
+        (Math.atan2(
+          (place.lng - previous.lng) * Math.cos(averageLatitude),
+          place.lat - previous.lat,
+        ) *
+          180) /
+        Math.PI;
+      const arrow = L.marker(midpoint, {
+        interactive: false,
+        zIndexOffset: 700,
+        icon: L.divIcon({
+          className: "route-arrow",
+          html: `<span style="display:block;color:#00d8ff;font-size:19px;line-height:19px;text-shadow:0 0 8px rgba(0,216,255,.9);transform:rotate(${bearing}deg)">▲</span>`,
+          iconSize: [19, 19],
+          iconAnchor: [9.5, 9.5],
+        }),
+      }).addTo(map);
+      routeLayers.push(line, arrow);
+    };
 
     const locationControl = L.control({ position: "topright" });
     locationControl.onAdd = () => {
@@ -77,6 +143,38 @@ export default function MapCanvas() {
     };
     locationControl.addTo(map);
 
+    const routeControl = L.control({ position: "topright" });
+    routeControl.onAdd = () => {
+      const controls = L.DomUtil.create("div", "route-builder-control");
+      controls.style.cssText = "display:flex;gap:6px;margin:8px 14px 0 0;";
+      const routeButton = L.DomUtil.create("button", "route-builder-button", controls) as HTMLButtonElement;
+      routeButton.type = "button";
+      routeButton.title = "Build a route";
+      routeButton.setAttribute("aria-label", "Toggle route-building mode");
+      routeButton.textContent = "A → B";
+      routeButton.style.cssText = "height:34px;padding:0 11px;border:1px solid rgba(0,216,255,.55);border-radius:17px;background:rgba(12,14,16,.88);color:#00d8ff;font:700 11px/1 monospace;letter-spacing:.04em;cursor:pointer;box-shadow:0 0 16px rgba(0,216,255,.16);backdrop-filter:blur(10px);";
+      const clearButton = L.DomUtil.create("button", "route-clear-button", controls) as HTMLButtonElement;
+      clearButton.type = "button";
+      clearButton.title = "Clear route";
+      clearButton.setAttribute("aria-label", "Clear selected route");
+      clearButton.textContent = "×";
+      clearButton.style.cssText = "width:34px;height:34px;border:1px solid rgba(255,255,255,.22);border-radius:50%;background:rgba(12,14,16,.88);color:#fff;font:400 21px/1 sans-serif;cursor:pointer;backdrop-filter:blur(10px);";
+      L.DomEvent.disableClickPropagation(controls);
+      L.DomEvent.on(routeButton, "click", (event) => {
+        L.DomEvent.stop(event);
+        routeMode = !routeMode;
+        routeButton.textContent = routeMode ? "SELECTING…" : "A → B";
+        routeButton.style.background = routeMode ? "#00d8ff" : "rgba(12,14,16,.88)";
+        routeButton.style.color = routeMode ? "#071014" : "#00d8ff";
+      });
+      L.DomEvent.on(clearButton, "click", (event) => {
+        L.DomEvent.stop(event);
+        clearRoute();
+      });
+      return controls;
+    };
+    routeControl.addTo(map);
+
     for (const place of PLACES) {
       const marker = L.circleMarker([place.lat, place.lng], {
         radius: 7,
@@ -98,6 +196,10 @@ export default function MapCanvas() {
       );
       placeMarkers.set(place.id, marker);
       marker.on("click", () => {
+        if (routeMode) {
+          addRoutePoint(place);
+          return;
+        }
         const origin = currentOrigin ? `&origin=${currentOrigin.lat},${currentOrigin.lng}` : "";
         const directionsUrl = `https://www.google.com/maps/dir/?api=1${origin}&destination=${place.lat},${place.lng}&travelmode=driving`;
         window.open(directionsUrl, "_blank", "noopener,noreferrer");
